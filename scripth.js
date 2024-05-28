@@ -5,7 +5,7 @@ const main_planets_list_element = document.getElementById("main-planets-list1")
 
 
 class Planets {
-	constructor(type, mass_earth, hazard_rating, other_traits, population, economy_gdp, stability, access, industry, market_demand, market_supply) {
+	constructor(type, mass_earth, hazard_rating, other_traits, population, economy_gdp, stability, access, industry, market_demand, market_supply, rare_metals, organics) {
 		this.type =				type
 		this.mass_earth =		mass_earth
 		this.hazard_rating =	hazard_rating
@@ -17,6 +17,17 @@ class Planets {
 		this.industry =			industry
 		this.market_demand =	market_demand
 		this.market_supply =	market_supply
+		this.rare_metals =		rare_metals
+		this.organics = 		organics
+	}
+}
+
+
+
+
+class Star_system {
+	constructor(system_bodies){
+		this.system_bodies
 	}
 }
 
