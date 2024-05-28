@@ -1,0 +1,13 @@
+body{
+    color: white;
+    background-color: rgb(26, 28, 32);
+}
+
+.planet-list-item{
+    display: flex;
+    border-top: solid gray 2px;
+}
+
+.planet-info-item{
+    margin: 10px;
+}
