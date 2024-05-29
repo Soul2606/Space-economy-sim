@@ -3,15 +3,47 @@ body{
     background-color: rgb(26, 28, 32);
 }
 
+.star-system-info{
+    display: flex;
+    flex-direction: column;
+    border-top: solid gray 2px;
+    margin: 5px;
+}
+
+.star-system-info-container{
+    display: flex;
+}
+
+.star-system-info-system-bodies-dropdown-button{
+    height: 20px;
+    align-self: stretch;
+    background-color: gray;
+    border: none;
+    margin-top: 5px;
+}
+
+.star-system-info-system-bodies-dropdown-button:hover{
+    background-color: lightgray;
+}
+
+.star-list-item{
+    display: flex;
+    border-top: solid gray 2px;
+    margin: 5px;
+    justify-content: space-evenly;
+}
+
 .planets-list{
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    justify-self: stretch;
 }
 
 .planet-list-item{
     display: flex;
     border-top: solid gray 2px;
+    margin: 5px;
+    justify-content: space-evenly;
 }
 
 .planet-info-item{
