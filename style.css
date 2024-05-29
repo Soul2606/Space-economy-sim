@@ -3,6 +3,12 @@ body{
     background-color: rgb(26, 28, 32);
 }
 
+.planets-list{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .planet-list-item{
     display: flex;
     border-top: solid gray 2px;

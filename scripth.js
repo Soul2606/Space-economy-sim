@@ -4,21 +4,21 @@ const main_planets_list_element = document.getElementById("main-planets-list1")
 
 
 
-class Planets {
-	constructor(type, mass_earth, hazard_rating, other_traits, population, economy_gdp, stability, access, industry, market_demand, market_supply, rare_metals, organics) {
-		this.type =				type
-		this.mass_earth =		mass_earth
-		this.hazard_rating =	hazard_rating
-		this.other_traits =		other_traits
-		this.population =		population
-		this.economy_gdp =		economy_gdp
-		this.stability =		stability
-		this.access =			access
-		this.industry =			industry
-		this.market_demand =	market_demand
-		this.market_supply =	market_supply
-		this.rare_metals =		rare_metals
-		this.organics = 		organics
+class Planet {
+	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, industry, market_demand, market_supply, rare_metals, organics) {
+		this.type =						type
+		this.mass_earth =				mass_earth
+		this.hazard_rating =			hazard_rating
+		this.atmosphere_pressure =		atmosphere_pressure
+		this.population =				population
+		this.economy_gdp =				economy_gdp
+		this.stability =				stability
+		this.access =					access
+		this.industry =					industry
+		this.market_demand =			market_demand
+		this.market_supply =			market_supply
+		this.rare_metals =				rare_metals
+		this.organics = 				organics
 	}
 }
 
@@ -26,9 +26,50 @@ class Planets {
 
 
 class Star_system {
-	constructor(system_bodies){
-		this.system_bodies
+	constructor(system_stars, system_bodies, distance_to_start){
+		this.system_stars = 		system_stars
+		this.system_bodies =		system_bodies
+		this.distance_to_start =	distance_to_start
 	}
+}
+
+
+
+
+class Star {
+	constructor(mass_solar, type){
+		this.mass_solar =	mass_solar
+		this.type =			type
+	}
+}
+
+
+
+
+function random_array_element(array){
+	return array[Math.floor(Math.random() * array.length)]
+}
+
+
+
+
+function create_star_system_info_element(star_system){
+	const main_body_div = document.createElement("div")
+	main_body_div.className = "star-system-info"
+
+	const info_container = document.createElement("div")
+	info_container.className = "star-system-info-container"
+	main_body_div.appendChild(info_container)
+	
+	const system_bodies_dropdown_button = document.createElement("button")
+	system_bodies_dropdown_button.className = "star-system-info-system-bodies-dropdown-button"
+	main_body_div.appendChild(system_bodies_dropdown_button)
+
+	const system_bodies_dropdown = document.createElement("div")
+	system_bodies_dropdown.className = "star-system-info-system-bodies-dropdown-box"
+	main_body_div.appendChild(system_bodies_dropdown)
+
+	return main_body_div
 }
 
 
@@ -65,4 +106,30 @@ function create_planet_list_item_element(planet_type, planet_earth_mass, planet_
 
 
 
+function generate_random_planet(){
+	const mass = 0.05 + Math.sqrt(Math.random() * 200)
+	const type = random_array_element(["terra", "gas giant", "oceania", "super oceania"])
+	const hazard_rating = Math.random() * 20
+	const atmosphere_pressure = Math.sqrt(Math.random() * 22500)
+	const rare_metals = Math.random() * 5
+	let organics = 0
+	if(type === "terra"){
+		organics = Math.random() * 1.5
+	}else if(type === "oceania"){
+		organics = Math.random() * 0.5
+	}
+	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics)
+	return planet
+}
+
+
+
+
 main_planets_list_element.appendChild(create_planet_list_item_element("terrestrial", "1", "1", ""))
+
+const planet_1 = new Planet("terrestrial", 1, 1, "", 8000000000, 2000000000000, 1, 0.01, "", "", "", 1, 1)
+const planet_2 = generate_random_planet()
+const star_1 = new Star(1, "yellow dwarf")
+const starting_system = new Star_system([star_1], [planet_1, planet_2], 0)
+
+console.log(starting_system)
