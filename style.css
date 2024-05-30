@@ -3,6 +3,19 @@ body{
     background-color: rgb(26, 28, 32);
 }
 
+.progress-bar-border{
+    height: 15px;
+    width: 100%;
+    border: solid 2px lightgray;
+    border-radius: 10px / 50%;
+}
+
+.progress-bar-fill{
+    background-color: green;
+    height: 100%;
+    border-radius: 10px / 50%;
+}
+
 .star-system-info{
     display: flex;
     flex-direction: column;
@@ -12,6 +25,10 @@ body{
 
 .star-system-info-container{
     display: flex;
+}
+
+.star-system-info-paragraph{
+    margin: 0 12px;
 }
 
 .star-system-info-system-bodies-dropdown-button{
