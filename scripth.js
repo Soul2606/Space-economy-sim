@@ -1,12 +1,12 @@
 
-const main_planets_list_element = document.getElementById("main-planets-list1")
+const main_systems_list_element = document.getElementById("main-systems-list1")
 
 /* temperature is in kelvin */
 
 
 
 class Planet {
-	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, industry, market_demand, market_supply, rare_metals, organics, average_surface_temperature) {
+	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, industry, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony) {
 		this.type =							type
 		this.mass_earth =					mass_earth
 		this.hazard_rating =				hazard_rating
@@ -21,6 +21,7 @@ class Planet {
 		this.rare_metals =					rare_metals
 		this.organics = 					organics
 		this.average_surface_temperature =	average_surface_temperature
+		this.has_colony =					has_colony
 	}
 }
 
@@ -55,7 +56,7 @@ function random_array_element(array){
 
 
 
-function create_star_system_info_element(star_info_elements, planet_info_elements, distance_to_start){
+function create_star_system_info_element(star_info_elements, planet_info_table, distance_to_start, number_of_objects){
 	const main_body_div = document.createElement("div")
 	main_body_div.className = "star-system-info"
 
@@ -69,16 +70,16 @@ function create_star_system_info_element(star_info_elements, planet_info_element
 	info_container.appendChild(distance_to_start_paragraph)
 	
 	const number_of_object_paragraph = document.createElement("p")
-	number_of_object_paragraph.textContent = "Number of objects: " + (star_info_elements.length + planet_info_elements.length)
+	number_of_object_paragraph.textContent = "Number of objects: " + number_of_objects
 	number_of_object_paragraph.className = "star-system-info-paragraph"
 	info_container.appendChild(number_of_object_paragraph)
 	
 	const system_bodies_dropdown_button = document.createElement("button")
-	system_bodies_dropdown_button.className = "star-system-info-system-bodies-dropdown-button"
+	system_bodies_dropdown_button.className = "star-system-bodies-list-button"
 	main_body_div.appendChild(system_bodies_dropdown_button)
 
 	const system_bodies_dropdown = document.createElement("div")
-	system_bodies_dropdown.className = "star-system-info-system-bodies-dropdown-box"
+	system_bodies_dropdown.className = "star-system-bodies-list-box"
 	system_bodies_dropdown.style.display = "none"
 
 	for (let i = 0; i < star_info_elements.length; i++) {
@@ -86,10 +87,7 @@ function create_star_system_info_element(star_info_elements, planet_info_element
 		system_bodies_dropdown.appendChild(element)
 	}
 
-	for (let i = 0; i < planet_info_elements.length; i++) {
-		const element = planet_info_elements[i];
-		system_bodies_dropdown.appendChild(element)
-	}
+	system_bodies_dropdown.appendChild(planet_info_table)
 
 	main_body_div.appendChild(system_bodies_dropdown)
 
@@ -126,40 +124,107 @@ function create_star_info_element(star_type, star_solar_mass){
 
 function create_planet_info_element(planet_type, planet_earth_mass, planet_hazard_rating, planet_average_surface_temperature, planet_atmosphere_pressure, planet_organics){
 
-	const main_body_div = document.createElement("div")
-	main_body_div.className = "planet-list-item"
+	const main_body_div = document.createElement("tr")
+	main_body_div.className = "planet-table-row"
 
-	const paragraph_type = document.createElement("p")
+	const paragraph_type = document.createElement("td")
 	paragraph_type.className = "planet-info-item"
-	paragraph_type.textContent = "Type: " + planet_type
+	paragraph_type.textContent = planet_type
 	main_body_div.appendChild(paragraph_type)
 
-	const paragraph_mass_earth = document.createElement("p")
+	const paragraph_mass_earth = document.createElement("td")
 	paragraph_mass_earth.className = "planet-info-item"
-	paragraph_mass_earth.textContent = "Mass E: " + planet_earth_mass.toFixed(2)
+	paragraph_mass_earth.textContent = String(planet_earth_mass.toFixed(2))
 	main_body_div.appendChild(paragraph_mass_earth)
 
-	const paragraph_hazard_rating = document.createElement("p")
+	const paragraph_hazard_rating = document.createElement("td")
 	paragraph_hazard_rating.className = "planet-info-item"
-	paragraph_hazard_rating.textContent = "Hazard rating: " + planet_hazard_rating.toFixed(2)
+	paragraph_hazard_rating.textContent = String(planet_hazard_rating.toFixed(2))
 	main_body_div.appendChild(paragraph_hazard_rating)
 
-	const paragraph_surface_temperature = document.createElement("p")
+	const paragraph_surface_temperature = document.createElement("td")
 	paragraph_surface_temperature.className = "planet-info-item"
-	paragraph_surface_temperature.textContent = "Average surface temperature: " + planet_average_surface_temperature.toFixed(2) + "k"
+	paragraph_surface_temperature.textContent = (planet_average_surface_temperature -273.15).toFixed(2) + "c"
+	paragraph_surface_temperature.style.color = rgb_string_from_temperature(planet_average_surface_temperature)
 	main_body_div.appendChild(paragraph_surface_temperature)
 
-	const paragraph_atmosphere_pressure = document.createElement("p")
+	const paragraph_atmosphere_pressure = document.createElement("td")
 	paragraph_atmosphere_pressure.className = "planet-info-item"
-	paragraph_atmosphere_pressure.textContent = "Atmosphere pressure: " + planet_atmosphere_pressure.toFixed(2) + "bar"
+	paragraph_atmosphere_pressure.textContent = planet_atmosphere_pressure.toFixed(2) + "bar"
 	main_body_div.appendChild(paragraph_atmosphere_pressure)
 
-	const paragraph_organics = document.createElement("p")
+	const paragraph_organics = document.createElement("td")
 	paragraph_organics.className = "planet-info-item"
-	paragraph_organics.textContent = "Organics: " + planet_organics.toFixed(2)
+	paragraph_organics.textContent = String(planet_organics.toFixed(2))
+	planet_organics > 0? paragraph_organics.style.color = "green": paragraph_organics.style.color = "white"
 	main_body_div.appendChild(paragraph_organics)
 
 	return main_body_div
+}
+
+
+
+
+function create_planets_table_element(planet_info_elements){
+
+	const planets_table = document.createElement("table")
+	planets_table.className = "system-planets-table"
+
+
+
+	/*
+	<tr class="planet-info-header">
+		<th class="planet-info-item">Type</th>
+		<th class="planet-info-item">Mass E</th>
+		<th class="planet-info-item">Hazard rating</th>
+		<th class="planet-info-item">Average surface temperature</th>
+		<th class="planet-info-item">Atmosphere pressure</th>
+		<th class="planet-info-item">Organics</th>
+	</tr>
+	*/
+	const table_header = document.createElement("tr")
+	table_header.className = "planet-info-header"
+
+	const paragraph_type = document.createElement("th")
+	paragraph_type.className = "planet-info-item"
+	paragraph_type.textContent = "Type"
+	table_header.appendChild(paragraph_type)
+
+	const paragraph_mass_earth = document.createElement("th")
+	paragraph_mass_earth.className = "planet-info-item"
+	paragraph_mass_earth.textContent = "Mass E"
+	table_header.appendChild(paragraph_mass_earth)
+
+	const paragraph_hazard_rating = document.createElement("th")
+	paragraph_hazard_rating.className = "planet-info-item"
+	paragraph_hazard_rating.textContent = "Hazard rating"
+	table_header.appendChild(paragraph_hazard_rating)
+
+	const paragraph_surface_temperature = document.createElement("th")
+	paragraph_surface_temperature.className = "planet-info-item"
+	paragraph_surface_temperature.textContent = "Average surface temperature"
+	table_header.appendChild(paragraph_surface_temperature)
+
+	const paragraph_atmosphere_pressure = document.createElement("th")
+	paragraph_atmosphere_pressure.className = "planet-info-item"
+	paragraph_atmosphere_pressure.textContent = "Atmosphere pressure"
+	table_header.appendChild(paragraph_atmosphere_pressure)
+
+	const paragraph_organics = document.createElement("th")
+	paragraph_organics.className = "planet-info-item"
+	paragraph_organics.textContent = "Organics" 
+	table_header.appendChild(paragraph_organics)
+
+	planets_table.appendChild(table_header)
+	
+	
+
+	for (let i = 0; i < planet_info_elements.length; i++) {
+		const element = planet_info_elements[i];
+		planets_table.appendChild(element)
+	}
+
+	return planets_table
 }
 
 
@@ -181,15 +246,47 @@ function create_progress_bar(progress) {
 
 
 
-function calculate_hazard_rating_factor_from_temperature(average_surface_temperature){
-	return Math.log10((((average_surface_temperature - 293.15) ** 2) / 20000) + 1) + 1
+function value_difference(value1, value2){
+	return Math.sqrt(((value1 - value2) ** 2) + 1)
 }
 
 
 
 
-function value_difference(value1, value2){
-	return Math.sqrt(((value1 - value2) ** 2) + 1)
+function dot(value1, value2){
+	return 1 / (Math.abs(value1 - value2) + 1)
+}
+
+
+
+
+function soft_sign(value){
+	return (value / (Math.abs(value) + 1))
+}
+
+
+
+
+function soft_sign2(value, min, max){
+	return(value / (Math.abs(value) + 1)) * ((max / 2) - (min / 2)) + (max / 2) + (min / 2)
+}
+
+
+
+
+function rgb_string_from_temperature(value){
+	const color_rgb_string = "rgb("+
+	//red
+	soft_sign2((value - 290) * 0.08, 0, 255)
+	+", "+
+	//green
+	(205 / (value_difference(value, 280) * 0.03) + (50 * soft_sign2((value - 700) * 0.01, 1, 0)))
+	+", "+
+	//blue
+	soft_sign2((value - 245) * 0.2, 255, 0)
+	+")"
+
+	return color_rgb_string
 }
 
 
@@ -223,8 +320,13 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 	}
 
 	const rare_metals = Math.random() * 5
+
 	const average_surface_temperature = Math.sqrt(energy_from_stars * Math.sqrt(atmosphere_pressure) * 80000)
-	const hazard_rating = calculate_hazard_rating_factor_from_temperature(average_surface_temperature) + Math.log10(value_difference(atmosphere_pressure, 1)) + Math.log10(value_difference(mass, 1))
+
+	const hazard_rating = 1 + 
+		(((average_surface_temperature - 285) ** 2) / 100000) + Math.log10(1.04 ** (average_surface_temperature - 305) + 1) +
+		Math.log10(value_difference(atmosphere_pressure, 1)) + 
+		Math.log10(value_difference(mass, 1))
 	
 	let organics = 0
 	switch(type){
@@ -240,7 +342,7 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 	organics -= (value_difference(average_surface_temperature, 293) * 0.02) ** 2
 	organics = Math.max(organics, 0)
 	
-	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics, average_surface_temperature)
+	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics, average_surface_temperature, false)
 	return planet
 }
 
@@ -248,15 +350,18 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 
 
 let planets =[]
-planets.push(generate_random_planet(2, 2))
-const planet_1 = new Planet("terra", 1, 1, 1, 8000000000, 2000000000000, 1, 0.01, "", "", "", 1, 1, 282)
-planets.push(planet_1)
-for (let i = 2; i < 90; i++) {
 
-	planets.push(generate_random_planet(1, 1, "terra"))
+console.groupCollapsed("generated planet with solar energy")
+for (let i = 2; i < 24; i++) {
 
+	planets.push(generate_random_planet(5/((i * 0.5) ** 2), 1, "terra"))
+
+	console.log(5/((i * 0.5) ** 2))
 }
+console.groupEnd()
+
 const star_1 = new Star(1, "yellow dwarf")
+
 const starting_system = new Star_system([star_1], planets, 0)
 
 
@@ -271,7 +376,6 @@ for (let i = 0; i < planets.length; i++) {
 
 const star_info_elements = [create_star_info_element(star_1.type, star_1.mass_solar)]
 
+const planets_table_element = create_planets_table_element(planet_info_elements)
 
-main_planets_list_element.appendChild(create_star_system_info_element(star_info_elements, planet_info_elements, starting_system.distance_to_start))
-
-main_planets_list_element.appendChild(create_progress_bar(0.2))
+main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1))

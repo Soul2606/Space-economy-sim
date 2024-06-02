@@ -16,6 +16,11 @@ body{
     border-radius: 10px / 50%;
 }
 
+.systems-list{
+    width: fit-content;
+    min-width: 100%;
+}
+
 .star-system-info{
     display: flex;
     flex-direction: column;
@@ -31,7 +36,7 @@ body{
     margin: 0 12px;
 }
 
-.star-system-info-system-bodies-dropdown-button{
+.star-system-bodies-list-button{
     height: 20px;
     align-self: stretch;
     background-color: gray;
@@ -39,7 +44,7 @@ body{
     margin-top: 5px;
 }
 
-.star-system-info-system-bodies-dropdown-button:hover{
+.star-system-bodies-list-button:hover{
     background-color: lightgray;
 }
 
@@ -50,19 +55,12 @@ body{
     justify-content: space-evenly;
 }
 
-.planets-list{
-    display: flex;
-    flex-direction: column;
-    justify-self: stretch;
-}
-
-.planet-list-item{
-    display: flex;
-    border-top: solid gray 2px;
-    margin: 5px;
-    justify-content: space-evenly;
+.system-planets-table{
+    width: 100%;
+    overflow: hidden;
 }
 
 .planet-info-item{
-    margin: 10px;
+    border-right: solid gray 2px;
+    border-top: solid gray 2px;
 }
