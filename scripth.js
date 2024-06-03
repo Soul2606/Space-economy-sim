@@ -1,5 +1,6 @@
 
-const main_systems_list_element = document.getElementById("main-systems-list1")
+const main_systems_list_element = document.getElementById("systems-list0")
+const planet_overview_base_element = document.getElementById("planet-overview0")
 
 /* temperature is in kelvin */
 
@@ -56,6 +57,32 @@ function random_array_element(array){
 
 
 
+function get_object_from_path(object, path){
+	if(!Array.isArray(path)){
+		throw new Error(path + " is not a valid array")
+	}
+	if(typeof object !== "object"){
+		throw new Error(path + " is not a valid object")
+	}
+
+	let current
+
+	for (let i = 0; i < path.length; i++) {
+		const key = path[i];
+		
+		current = current[key]
+
+		if(current === undefined){
+			throw new Error(path + " is not a valid path in object " + JSON.stringify(object))
+		}
+	}
+
+	return current
+}
+
+
+
+
 function create_star_system_info_element(star_info_elements, planet_info_table, distance_to_start, number_of_objects){
 	const main_body_div = document.createElement("div")
 	main_body_div.className = "star-system-info"
@@ -74,9 +101,13 @@ function create_star_system_info_element(star_info_elements, planet_info_table, 
 	number_of_object_paragraph.className = "star-system-info-paragraph"
 	info_container.appendChild(number_of_object_paragraph)
 	
-	const system_bodies_dropdown_button = document.createElement("button")
+	const system_bodies_dropdown_button = document.createElement("div")
 	system_bodies_dropdown_button.className = "star-system-bodies-list-button"
 	main_body_div.appendChild(system_bodies_dropdown_button)
+
+	const button_arrow = document.createElement("div")
+	button_arrow.className = "arrow-down"
+	system_bodies_dropdown_button.appendChild(button_arrow)
 
 	const system_bodies_dropdown = document.createElement("div")
 	system_bodies_dropdown.className = "star-system-bodies-list-box"
@@ -92,7 +123,13 @@ function create_star_system_info_element(star_info_elements, planet_info_table, 
 	main_body_div.appendChild(system_bodies_dropdown)
 
 	system_bodies_dropdown_button.addEventListener("click", function() {
-		system_bodies_dropdown.style.display = system_bodies_dropdown.style.display === "none" ? "block" : "none";
+		if(system_bodies_dropdown.style.display === "none"){
+			system_bodies_dropdown.style.display = "block"
+			button_arrow.className = "arrow-up"
+		}else{
+			system_bodies_dropdown.style.display = "none"
+			button_arrow.className = "arrow-down"
+		}
 	});
 
 	return main_body_div
@@ -122,7 +159,7 @@ function create_star_info_element(star_type, star_solar_mass){
 
 
 
-function create_planet_info_element(planet_type, planet_earth_mass, planet_hazard_rating, planet_average_surface_temperature, planet_atmosphere_pressure, planet_organics){
+function create_planet_info_element(planet_type, planet_earth_mass, planet_hazard_rating, planet_average_surface_temperature, planet_atmosphere_pressure, planet_organics, planet_has_colony){
 
 	const main_body_div = document.createElement("tr")
 	main_body_div.className = "planet-table-row"
@@ -159,29 +196,22 @@ function create_planet_info_element(planet_type, planet_earth_mass, planet_hazar
 	planet_organics > 0? paragraph_organics.style.color = "green": paragraph_organics.style.color = "white"
 	main_body_div.appendChild(paragraph_organics)
 
+	const paragraph_has_colony = document.createElement("td")
+	paragraph_has_colony.className = "planet-info-item"
+	paragraph_has_colony.textContent = planet_has_colony? ">": "-"
+	main_body_div.appendChild(paragraph_has_colony)
+
 	return main_body_div
 }
 
 
 
 
-function create_planets_table_element(planet_info_elements){
+function create_planets_table_element(planet_info_elements, planet_object){
 
 	const planets_table = document.createElement("table")
 	planets_table.className = "system-planets-table"
 
-
-
-	/*
-	<tr class="planet-info-header">
-		<th class="planet-info-item">Type</th>
-		<th class="planet-info-item">Mass E</th>
-		<th class="planet-info-item">Hazard rating</th>
-		<th class="planet-info-item">Average surface temperature</th>
-		<th class="planet-info-item">Atmosphere pressure</th>
-		<th class="planet-info-item">Organics</th>
-	</tr>
-	*/
 	const table_header = document.createElement("tr")
 	table_header.className = "planet-info-header"
 
@@ -215,12 +245,20 @@ function create_planets_table_element(planet_info_elements){
 	paragraph_organics.textContent = "Organics" 
 	table_header.appendChild(paragraph_organics)
 
+	const paragraph_colony = document.createElement("th")
+	paragraph_colony.className = "planet-info-item"
+	paragraph_colony.textContent = "Colony"
+	table_header.appendChild(paragraph_colony)
+
 	planets_table.appendChild(table_header)
 	
 	
 
 	for (let i = 0; i < planet_info_elements.length; i++) {
 		const element = planet_info_elements[i];
+		element.addEventListener("click", function(){
+			open_planet_overview_panel(planet_object)
+		})
 		planets_table.appendChild(element)
 	}
 
@@ -337,9 +375,8 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 			organics = 0.5
 			break
 	}
-	organics -= Math.max(((hazard_rating - 1) / 4), 0)
-	organics -= (1 / (10 * atmosphere_pressure)) + (1.4 ** (atmosphere_pressure - 1)) - 1
-	organics -= (value_difference(average_surface_temperature, 293) * 0.02) ** 2
+	organics -= (1 / (10 * atmosphere_pressure)) + (1.05 ** (atmosphere_pressure)) - 1
+	organics -= (average_surface_temperature - 290) ** 2 * 0.0003
 	organics = Math.max(organics, 0)
 	
 	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics, average_surface_temperature, false)
@@ -349,12 +386,26 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 
 
 
+function open_planet_overview_panel(planet){
+	console.groupCollapsed("open planet overview panel")
+	console.log("this", this)
+	console.log("planet", planet)
+
+	planet_overview_base_element.style.display = "block"
+
+	console.groupEnd()
+}
+
+
+
+
 let planets =[]
 
 console.groupCollapsed("generated planet with solar energy")
 for (let i = 2; i < 24; i++) {
+	const planet = generate_random_planet(5/((i * 0.5) ** 2), 1, "terra")
 
-	planets.push(generate_random_planet(5/((i * 0.5) ** 2), 1, "terra"))
+	planets.push(planet)
 
 	console.log(5/((i * 0.5) ** 2))
 }
@@ -371,7 +422,7 @@ let planet_info_elements = []
 for (let i = 0; i < planets.length; i++) {
 	const element = planets[i];
 	
-	planet_info_elements.push(create_planet_info_element(element.type, element.mass_earth, element.hazard_rating, element.average_surface_temperature, element.atmosphere_pressure, element.organics))
+	planet_info_elements.push(create_planet_info_element(element.type, element.mass_earth, element.hazard_rating, element.average_surface_temperature, element.atmosphere_pressure, element.organics, element.has_colony))
 }
 
 const star_info_elements = [create_star_info_element(star_1.type, star_1.mass_solar)]

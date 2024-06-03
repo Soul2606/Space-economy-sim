@@ -3,6 +3,28 @@ body{
     background-color: rgb(26, 28, 32);
 }
 
+.flexbox-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.arrow-up{
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid white;
+}
+
+.arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid white;
+}
+
 .progress-bar-border{
     height: 15px;
     width: 100%;
@@ -42,6 +64,8 @@ body{
     background-color: gray;
     border: none;
     margin-top: 5px;
+    display: flex;
+    align-items: center;
 }
 
 .star-system-bodies-list-button:hover{
@@ -63,4 +87,8 @@ body{
 .planet-info-item{
     border-right: solid gray 2px;
     border-top: solid gray 2px;
+}
+
+.planet-table-row:hover > td{
+    background-color: darkslategrey;
 }
