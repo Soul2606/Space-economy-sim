@@ -3,9 +3,8 @@ body{
     background-color: rgb(26, 28, 32);
 }
 
-.flexbox-center{
+.flexbox-align-center{
     display: flex;
-    justify-content: center;
     align-items: center;
 }
 
@@ -39,8 +38,13 @@ body{
 }
 
 .systems-list{
-    width: fit-content;
-    min-width: 100%;
+    width: 100%;
+    min-width: min-content;
+}
+
+.planet-overview{
+    width: 100%;
+    min-width: min-content;
 }
 
 .star-system-info{
@@ -79,16 +83,11 @@ body{
     justify-content: space-evenly;
 }
 
-.system-planets-table{
-    width: 100%;
-    overflow: hidden;
-}
-
 .planet-info-item{
     border-right: solid gray 2px;
     border-top: solid gray 2px;
 }
 
 .planet-table-row:hover > td{
-    background-color: darkslategrey;
+    background-color: rgb(14, 15, 18);
 }

@@ -183,6 +183,7 @@ function create_planet_info_element(planet_type, planet_earth_mass, planet_hazar
 	paragraph_surface_temperature.className = "planet-info-item"
 	paragraph_surface_temperature.textContent = (planet_average_surface_temperature -273.15).toFixed(2) + "c"
 	paragraph_surface_temperature.style.color = rgb_string_from_temperature(planet_average_surface_temperature)
+	paragraph_surface_temperature.style.textShadow = "0 0 " + soft_sign2((planet_average_surface_temperature - 350) / 100, 0, 6) + "px"
 	main_body_div.appendChild(paragraph_surface_temperature)
 
 	const paragraph_atmosphere_pressure = document.createElement("td")
@@ -207,7 +208,7 @@ function create_planet_info_element(planet_type, planet_earth_mass, planet_hazar
 
 
 
-function create_planets_table_element(planet_info_elements, planet_object){
+function create_planets_table_element(planet_objects){
 
 	const planets_table = document.createElement("table")
 	planets_table.className = "system-planets-table"
@@ -254,12 +255,15 @@ function create_planets_table_element(planet_info_elements, planet_object){
 	
 	
 
-	for (let i = 0; i < planet_info_elements.length; i++) {
-		const element = planet_info_elements[i];
-		element.addEventListener("click", function(){
+	for (let i = 0; i < planet_objects.length; i++) {
+		const planet_object = planet_objects[i]
+		const planet_table_row = create_planet_info_element(planet_object.type, planet_object.mass_earth, planet_object.hazard_rating, planet_object.average_surface_temperature, planet_object.atmosphere_pressure, planet_object.organics, planet_object.has_colony)
+		
+		planet_table_row.addEventListener("click", function(){
 			open_planet_overview_panel(planet_object)
 		})
-		planets_table.appendChild(element)
+
+		planets_table.appendChild(planet_table_row)
 	}
 
 	return planets_table
@@ -388,12 +392,18 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 
 function open_planet_overview_panel(planet){
 	console.groupCollapsed("open planet overview panel")
-	console.log("this", this)
 	console.log("planet", planet)
 
 	planet_overview_base_element.style.display = "block"
 
 	console.groupEnd()
+}
+
+
+
+
+function close_planet_overview_panel(){
+	planet_overview_base_element.style.display = "none"
 }
 
 
@@ -418,15 +428,8 @@ const starting_system = new Star_system([star_1], planets, 0)
 
 console.log(starting_system)
 
-let planet_info_elements = []
-for (let i = 0; i < planets.length; i++) {
-	const element = planets[i];
-	
-	planet_info_elements.push(create_planet_info_element(element.type, element.mass_earth, element.hazard_rating, element.average_surface_temperature, element.atmosphere_pressure, element.organics, element.has_colony))
-}
-
 const star_info_elements = [create_star_info_element(star_1.type, star_1.mass_solar)]
 
-const planets_table_element = create_planets_table_element(planet_info_elements)
+const planets_table_element = create_planets_table_element(planets)
 
 main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1))
