@@ -3,9 +3,9 @@ body{
     background-color: rgb(26, 28, 32);
 }
 
-.flexbox-align-center{
+.flexbox{
     display: flex;
-    align-items: center;
+
 }
 
 .arrow-up{
@@ -81,6 +81,10 @@ body{
     border-top: solid gray 2px;
     margin: 5px;
     justify-content: space-evenly;
+}
+
+.system-planets-table{
+    width: 100%;
 }
 
 .planet-info-item{
