@@ -48,8 +48,6 @@ body{
 }
 
 .star-system-info{
-    display: flex;
-    flex-direction: column;
     border-top: solid gray 2px;
     margin: 5px;
 }
@@ -94,4 +92,8 @@ body{
 
 .planet-table-row:hover > td{
     background-color: rgb(14, 15, 18);
+}
+
+.planet-overview-info{
+    margin: 0 4px;
 }

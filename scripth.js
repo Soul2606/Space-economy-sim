@@ -30,10 +30,12 @@ class Planet {
 
 
 class Star_system {
-	constructor(system_stars, system_bodies, distance_to_start){
+	constructor(system_stars, system_bodies, distance_to_start, system_name, position){
 		this.system_stars = 		system_stars
 		this.system_bodies =		system_bodies
 		this.distance_to_start =	distance_to_start
+		this.system_name =			system_name
+		this.position =				position
 	}
 }
 
@@ -44,6 +46,52 @@ class Star {
 	constructor(mass_solar, type){
 		this.mass_solar =	mass_solar
 		this.type =			type
+	}
+}
+
+
+
+
+class Vector3D {
+	/*
+	The systems have to exist somewhere in space. I use a Vector3D to set the position in space relative to the starting system which is always at (0, 0, 0)
+	The unit of measurement is in lightyears. Distances between planets within systems will not be simulated using this method. 
+	*/
+    constructor(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+	// All these methods may not be necessary
+    add(vector) {
+        return new Vector3D(this.x + vector.x, this.y + vector.y, this.z + vector.z);
+    }
+
+    subtract(vector) {
+        return new Vector3D(this.x - vector.x, this.y - vector.y, this.z - vector.z);
+    }
+
+    dot(vector) {
+        return this.x * vector.x + this.y * vector.y + this.z * vector.z;
+    }
+
+    cross(vector) {
+        return new Vector3D(
+            this.y * vector.z - this.z * vector.y,
+            this.z * vector.x - this.x * vector.z,
+            this.x * vector.y - this.y * vector.x
+        );
+    }
+
+	distance(vector) {
+		if(vector === 0){
+			return Math.sqrt((0 - this.x) ** 2 + (0 - this.y) ** 2 + (0 - this.z) ** 2)
+		}else if(vector instanceof Vector3D){
+			return Math.sqrt((vector.x - this.x) ** 2 + (vector.y - this.y) ** 2 + (vector.z - this.z) ** 2)
+		}else{
+			throw new Error(vector + " is not a valid object")
+		}
 	}
 }
 
@@ -83,7 +131,7 @@ function get_object_from_path(object, path){
 
 
 
-function create_star_system_info_element(star_info_elements, planet_info_table, distance_to_start, number_of_objects){
+function create_star_system_info_element(star_info_elements, planet_info_table, distance_to_start, number_of_objects, system_name, system_position){
 	const main_body_div = document.createElement("div")
 	main_body_div.className = "star-system-info"
 
@@ -100,6 +148,16 @@ function create_star_system_info_element(star_info_elements, planet_info_table, 
 	number_of_object_paragraph.textContent = "Number of objects: " + number_of_objects
 	number_of_object_paragraph.className = "star-system-info-paragraph"
 	info_container.appendChild(number_of_object_paragraph)
+
+	const name_paragraph = document.createElement("p")
+	name_paragraph.textContent = "System name: " + system_name
+	name_paragraph.className = "star-system-info-paragraph"
+	info_container.appendChild(name_paragraph)
+
+	const position_paragraph = document.createElement("p")
+	position_paragraph.className = "star-system-info-paragraph"
+	position_paragraph.textContent = "X " + system_position.x + ", Y " + system_position.y + ", Z " +system_position.z
+	info_container.appendChild(position_paragraph)
 	
 	const system_bodies_dropdown_button = document.createElement("div")
 	system_bodies_dropdown_button.className = "star-system-bodies-list-button"
@@ -365,10 +423,10 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 
 	const average_surface_temperature = Math.sqrt(energy_from_stars * Math.sqrt(atmosphere_pressure) * 80000)
 
-	const hazard_rating = 1 + 
+	const hazard_rating = 0 + 
 		(((average_surface_temperature - 285) ** 2) / 100000) + Math.log10(1.04 ** (average_surface_temperature - 305) + 1) +
-		Math.log10(value_difference(atmosphere_pressure, 1)) + 
-		Math.log10(value_difference(mass, 1))
+		Math.log10((atmosphere_pressure - 1) ** 2 + 1) + (1 / (10 * atmosphere_pressure ** 2 + 1)) +
+		(mass / 3)
 	
 	let organics = 0
 	switch(type){
@@ -385,6 +443,77 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 	
 	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics, average_surface_temperature, false)
 	return planet
+}
+
+
+
+
+function generate_random_star(mass_s = Math.random() ** 25 * 150 + 0.01){
+	let type
+	if(mass_s > 5){
+		type = "blue giant"
+	}else if(mass_s > 1.4){
+		type = "white main sequence"
+	}else if(mass_s > 0.8){
+		type = "yellow dwarf"
+	}else if(mass_s > 0.5){
+		type = "orange dwarf"
+	}else if(mass_s > 0.08){
+		type = "red dwarf"
+	}else{
+		type = "brown dwarf"
+	}
+	const star = new Star(mass_s, type)
+	return star
+}
+
+
+
+
+function generate_random_system(position, stars_amount = Math.ceil(Math.random() ** 18 * 7), planets_amount = Math.ceil(Math.random() * 32)){
+
+	let stars = []
+	let star_greatest_mass
+	for (let i = 0; i < stars_amount; i++) {
+		let star = generate_random_star()
+		stars.push(star)
+		if(star_greatest_mass === undefined){
+			star_greatest_mass = star
+		}else if(star.mass_solar > star_greatest_mass.mass_solar){
+			star_greatest_mass = star
+		}
+	}
+
+
+
+	let brightness = (star_greatest_mass.mass_solar / 2 + 1)
+	console.log("star brightness", brightness)
+
+	let planets = []
+	for (let i = 1; i < planets_amount; i++) {
+		let distance_to_brightest_star = i * (star_greatest_mass.mass_solar / 100 + 0.5)
+		let local_brightness = brightness / (distance_to_brightest_star ** 2)
+
+		console.log("brightness", local_brightness, "distance", distance_to_brightest_star)
+
+		planets.push(generate_random_planet(local_brightness, 1))
+	}
+
+
+
+	const system = new Star_system(stars, planets, position.distance(0), "hip" + Number.parseInt(Math.random() * 999), position)
+
+	let star_info_elements = []
+	for (let i = 0; i < stars.length; i++) {
+		const element = stars[i];
+		star_info_elements.push(create_star_info_element(element.type, element.mass_solar))
+	}
+
+	const planets_table = create_planets_table_element(planets)
+
+	main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table, system.distance_to_start, stars_amount + planets_amount, system.system_name, system.position))
+
+	return system
 }
 
 
@@ -423,13 +552,14 @@ console.groupEnd()
 
 const star_1 = new Star(1, "yellow dwarf")
 
-const starting_system = new Star_system([star_1], planets, 0)
+const starting_system = new Star_system([star_1], planets, 0, "hip" + Number.parseInt(Math.random() * 1000), new Vector3D(0,0,0))
 
 
-console.log(starting_system)
 
 const star_info_elements = [create_star_info_element(star_1.type, star_1.mass_solar)]
 
 const planets_table_element = create_planets_table_element(planets)
 
-main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1))
+main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1, starting_system.system_name, starting_system.position))
+
+generate_random_system(new Vector3D(1, 1, 0))
