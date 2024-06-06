@@ -421,7 +421,7 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 
 	const rare_metals = Math.random() * 5
 
-	const average_surface_temperature = Math.sqrt(energy_from_stars * Math.sqrt(atmosphere_pressure) * 80000)
+	const average_surface_temperature = Math.sqrt(energy_from_stars * soft_sign2(atmosphere_pressure - 1, 0.5, 2) * 80000)
 
 	const hazard_rating = 0 + 
 		(((average_surface_temperature - 285) ** 2) / 100000) + Math.log10(1.04 ** (average_surface_temperature - 305) + 1) +
@@ -437,7 +437,7 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 			organics = 0.5
 			break
 	}
-	organics -= (1 / (10 * atmosphere_pressure)) + (1.05 ** (atmosphere_pressure)) - 1
+	organics -= (1 / (10 * atmosphere_pressure)) + (0.05 * (1.1 ** (atmosphere_pressure)) - 0.05)
 	organics -= (average_surface_temperature - 290) ** 2 * 0.0003
 	organics = Math.max(organics, 0)
 	
@@ -448,7 +448,7 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 
 
 
-function generate_random_star(mass_s = Math.random() ** 25 * 150 + 0.01){
+function generate_random_star(mass_s = Math.random() ** 2 * 7 + 0.01){
 	let type
 	if(mass_s > 5){
 		type = "blue giant"
@@ -470,7 +470,7 @@ function generate_random_star(mass_s = Math.random() ** 25 * 150 + 0.01){
 
 
 
-function generate_random_system(position, stars_amount = Math.ceil(Math.random() ** 18 * 7), planets_amount = Math.ceil(Math.random() * 32)){
+function generate_random_system(position, stars_amount = Math.ceil(Math.random() ** 4 * 7), planets_amount = Math.ceil(Math.random() * 32)){
 
 	let stars = []
 	let star_greatest_mass
@@ -486,18 +486,21 @@ function generate_random_system(position, stars_amount = Math.ceil(Math.random()
 
 
 
-	let brightness = (star_greatest_mass.mass_solar / 2 + 1)
+	let brightness = (star_greatest_mass.mass_solar / 2 + 0.75) ** 2
+
+	console.groupCollapsed("new star system")
 	console.log("star brightness", brightness)
 
 	let planets = []
-	for (let i = 1; i < planets_amount; i++) {
-		let distance_to_brightest_star = i * (star_greatest_mass.mass_solar / 100 + 0.5)
+	for (let i = 0; i < planets_amount; i++) {
+		let distance_to_brightest_star = (i + 1) * (star_greatest_mass.mass_solar / 100 + 0.25) + 1
 		let local_brightness = brightness / (distance_to_brightest_star ** 2)
 
 		console.log("brightness", local_brightness, "distance", distance_to_brightest_star)
 
 		planets.push(generate_random_planet(local_brightness, 1))
 	}
+	console.groupEnd()
 
 
 
@@ -541,12 +544,12 @@ function close_planet_overview_panel(){
 let planets =[]
 
 console.groupCollapsed("generated planet with solar energy")
-for (let i = 2; i < 24; i++) {
-	const planet = generate_random_planet(5/((i * 0.5) ** 2), 1, "terra")
+for (let i = 0; i < 8; i++) {
+	const planet = generate_random_planet(5/((i * 0.75 + 1.5) ** 2), 1, "terra")
 
 	planets.push(planet)
 
-	console.log(5/((i * 0.5) ** 2))
+	console.log(5/((i * 0.5 + 1.5) ** 2))
 }
 console.groupEnd()
 
