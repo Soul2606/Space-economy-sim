@@ -89,6 +89,8 @@ class Vector3D {
         );
     }
 
+	normal()
+
 	distance(vector) {
 		if(vector === 0){
 			return Math.sqrt((0 - this.x) ** 2 + (0 - this.y) ** 2 + (0 - this.z) ** 2)
