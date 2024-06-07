@@ -2,7 +2,11 @@
 const main_systems_list_element = document.getElementById("systems-list0")
 const planet_overview_base_element = document.getElementById("planet-overview0")
 
-/* temperature is in kelvin */
+/* 
+Temperature is in kelvin.
+This sim does not care about the systems architecture around multiple stars. It pretends all the other stars don't exist, only the star with the greatest mass
+There is no dynamic star system architecture system because thats not the main focus of this app.
+*/
 
 
 
@@ -30,11 +34,11 @@ class Planet {
 
 
 class Star_system {
-	constructor(system_stars, system_bodies, distance_to_start, system_name, position){
-		this.system_stars = 		system_stars
-		this.system_bodies =		system_bodies
+	constructor(stars, planets, distance_to_start, name, position){
+		this.stars = 				stars
+		this.planets =				planets
 		this.distance_to_start =	distance_to_start
-		this.system_name =			system_name
+		this.name =					name
 		this.position =				position
 	}
 }
@@ -46,6 +50,7 @@ class Star {
 	constructor(mass_solar, type){
 		this.mass_solar =	mass_solar
 		this.type =			type
+		this.brightness =	(mass_solar / 2 + 0.75) ** 2
 	}
 }
 
@@ -63,7 +68,7 @@ class Vector3D {
         this.z = z;
     }
 
-	// All these methods may not be necessary
+	// All these methods might not be necessary
     add(vector) {
         return new Vector3D(this.x + vector.x, this.y + vector.y, this.z + vector.z);
     }
@@ -196,6 +201,20 @@ function create_star_system_info_element(star_info_elements, planet_info_table, 
 
 
 
+function create_star_system_info_element2(system){
+	const star_info_elements = create_star_info_list(system.stars)
+	const planet_info_table = create_planets_table_element(system.planets)
+	const distance_to_start = system.distance_to_start
+	const number_of_objects = system.stars.length + system.planets.length
+	const system_name = system.name
+	const system_position = system.position
+	const star_system_info_element = create_star_system_info_element(star_info_elements, planet_info_table, distance_to_start, number_of_objects, system_name, system_position)
+	return star_system_info_element
+}
+
+
+
+
 function create_star_info_element(star_type, star_solar_mass){
 
 	const main_body_div = document.createElement("div")
@@ -212,6 +231,18 @@ function create_star_info_element(star_type, star_solar_mass){
 	main_body_div.appendChild(paragraph_mass_earth)
 
 	return main_body_div
+}
+
+
+
+
+function create_star_info_list(stars){
+	let star_info_elements = []
+	for (let i = 0; i < stars.length; i++) {
+		const element = stars[i];
+		star_info_elements.push(create_star_info_element(element.type, element.mass_solar))
+	}
+	return star_info_elements
 }
 
 
@@ -374,6 +405,35 @@ function soft_sign2(value, min, max){
 
 
 
+function random_number_by_weight(numbers, numbers_weight){
+	//There should be a one to one correlation between 'numbers' and 'numbers_weight'
+	let numbers_copy = Array.from(numbers)
+	let weights = Array.from(numbers_weight)
+	while(weights.length < numbers_copy.length){
+		weights.push(1)
+	}
+	while(numbers_copy.length < weights.length){
+		numbers_copy.push(0)
+	}
+	let sum = 0
+	for (let i = 0; i < weights.length; i++) {
+		const element = weights[i]
+		sum += Math.abs(element)
+	}
+	const random_number = Math.random() * sum
+	let weight = 0
+	for (let i = 0; i < numbers_copy.length; i++) {
+		const number = numbers_copy[i]
+		weight += Math.abs(weights[i])
+		if(random_number < weight){
+			return number
+		}
+	}
+}
+
+
+
+
 function rgb_string_from_temperature(value){
 	const color_rgb_string = "rgb("+
 	//red
@@ -392,32 +452,43 @@ function rgb_string_from_temperature(value){
 
 
 
-function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_type){
-	let type = random_array_element(["terra", "gas giant", "oceania", "super oceania"])
-	if(planet_type !== undefined){
-		type = planet_type
-	}
+function generate_random_planet(energy_from_stars, solar_wind_intensity, type = random_array_element(["terra", "gas giant", "oceania", "super oceania"]), atmosphere_pressure, mass){	
 	
-	let mass
-	let atmosphere_pressure
 	switch (type) {
 		case "gas giant":
-			mass = Math.sqrt((Math.random() ** 4) * 200) + 4
-			atmosphere_pressure = 1
+			if(mass === undefined){
+				mass = Math.sqrt((Math.random() ** 4) * 200) + 4
+			}
+			if(atmosphere_pressure === undefined){
+				atmosphere_pressure = 1
+			}
 			break;
 		case "oceania":
-			mass = Math.sqrt((Math.random() ** 4) * 2) + 0.6
-			atmosphere_pressure = ((Math.random() ** 4) * 120) + 0.6
+			if(mass === undefined){
+				mass = Math.sqrt((Math.random() ** 4) * 2) + 0.6
+			}
+			if(atmosphere_pressure === undefined){
+				atmosphere_pressure = ((Math.random() ** 4) * 120) + 0.6
+			}
 			break;
 		case "super oceania":
-			mass = Math.sqrt((Math.random() ** 4) * 2) + 0.6
-			atmosphere_pressure = (Math.random() * 120) + 10
+			if(mass === undefined){
+				mass = Math.sqrt((Math.random() ** 4) * 2) + 0.6
+			}
+			if(atmosphere_pressure === undefined){
+				atmosphere_pressure = (Math.random() * 120) + 10
+			}
 			break;
 		default:
-			mass = Math.sqrt((Math.random() ** 4) * 4) + 0.05
-			atmosphere_pressure = (Math.random() ** 6) * 100 / (solar_wind_intensity + 1)
+			if(mass === undefined){
+				mass = Math.sqrt((Math.random() ** 4) * 4) + 0.05
+			}
+			if(atmosphere_pressure === undefined){
+				atmosphere_pressure = (Math.random() ** 6) * 100 / (solar_wind_intensity + 1)
+			}
 			break;
 	}
+
 
 	const rare_metals = Math.random() * 5
 
@@ -437,8 +508,8 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, planet_
 			organics = 0.5
 			break
 	}
-	organics -= (1 / (10 * atmosphere_pressure)) + (0.05 * (1.1 ** (atmosphere_pressure)) - 0.05)
-	organics -= (average_surface_temperature - 290) ** 2 * 0.0003
+	organics -= (1 / (1000 * atmosphere_pressure ** 2)) + (0.002 * (1.2 ** atmosphere_pressure))
+	organics -= (average_surface_temperature - 293 + Math.abs(average_surface_temperature - 293)) ** 2 / 1000 + (293 - average_surface_temperature + Math.abs(293 - average_surface_temperature)) ** 3 / 1000000
 	organics = Math.max(organics, 0)
 	
 	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics, average_surface_temperature, false)
@@ -470,7 +541,7 @@ function generate_random_star(mass_s = Math.random() ** 2 * 7 + 0.01){
 
 
 
-function generate_random_system(position, stars_amount = Math.ceil(Math.random() ** 4 * 7), planets_amount = Math.ceil(Math.random() * 32)){
+function generate_random_system(position, stars_amount = random_number_by_weight([1,2,3,4,5,6,7],[100,300,25,5,1,0.1]), planets_amount = Math.ceil(Math.random() * 16), system_name = "hip" + Number.parseInt(Math.random() * 999)){
 
 	let stars = []
 	let star_greatest_mass
@@ -484,9 +555,10 @@ function generate_random_system(position, stars_amount = Math.ceil(Math.random()
 		}
 	}
 
+	stars.sort((a, b) => b["mass_solar"] - a["mass_solar"])
 
 
-	let brightness = (star_greatest_mass.mass_solar / 2 + 0.75) ** 2
+	const brightness = star_greatest_mass.brightness
 
 	console.groupCollapsed("new star system")
 	console.log("star brightness", brightness)
@@ -504,17 +576,7 @@ function generate_random_system(position, stars_amount = Math.ceil(Math.random()
 
 
 
-	const system = new Star_system(stars, planets, position.distance(0), "hip" + Number.parseInt(Math.random() * 999), position)
-
-	let star_info_elements = []
-	for (let i = 0; i < stars.length; i++) {
-		const element = stars[i];
-		star_info_elements.push(create_star_info_element(element.type, element.mass_solar))
-	}
-
-	const planets_table = create_planets_table_element(planets)
-
-	main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table, system.distance_to_start, stars_amount + planets_amount, system.system_name, system.position))
+	const system = new Star_system(stars, planets, position.distance(0), system_name, position)
 
 	return system
 }
@@ -541,21 +603,28 @@ function close_planet_overview_panel(){
 
 
 
+const star_1 = new Star(1 + (Math.random()*0.05 - 0.05/2), "yellow dwarf")
+let brightness = star_1.brightness
+
 let planets =[]
 
 console.groupCollapsed("generated planet with solar energy")
+console.log("star brightness", brightness)
 for (let i = 0; i < 8; i++) {
-	const planet = generate_random_planet(5/((i * 0.75 + 1.5) ** 2), 1, "terra")
+	let local_brightness = brightness / ((i * 0.5 + 0.9) ** 2)
+	
+	if(i === 1){
+		planets.push(generate_random_planet(local_brightness, 1, "terra", 1))
+	}else{
+		planets.push(generate_random_planet(local_brightness, 1))
+	}
 
-	planets.push(planet)
-
-	console.log(5/((i * 0.5 + 1.5) ** 2))
+	console.log("local brightness", local_brightness)
 }
 console.groupEnd()
 
-const star_1 = new Star(1, "yellow dwarf")
 
-const starting_system = new Star_system([star_1], planets, 0, "hip" + Number.parseInt(Math.random() * 1000), new Vector3D(0,0,0))
+const starting_system = new Star_system([star_1], planets, 0, "Sol", new Vector3D(0,0,0))
 
 
 
@@ -563,6 +632,12 @@ const star_info_elements = [create_star_info_element(star_1.type, star_1.mass_so
 
 const planets_table_element = create_planets_table_element(planets)
 
-main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1, starting_system.system_name, starting_system.position))
+main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1, starting_system.name, starting_system.position))
 
-generate_random_system(new Vector3D(1, 1, 0))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))

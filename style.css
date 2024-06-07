@@ -77,7 +77,7 @@ body{
 .star-list-item{
     display: flex;
     border-top: solid gray 2px;
-    margin: 5px;
+    margin: 5px 0;
     justify-content: space-evenly;
 }
 
