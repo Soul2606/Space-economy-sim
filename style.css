@@ -8,6 +8,11 @@ body{
 
 }
 
+.flexbox-reverse{
+    display: flex;
+    flex-direction: row-reverse;
+}
+
 .arrow-up{
     width: 0;
     height: 0;
@@ -94,6 +99,6 @@ body{
     background-color: rgb(14, 15, 18);
 }
 
-.planet-overview-info{
+.planet-overview-infrastructure{
     margin: 0 4px;
 }

@@ -9,17 +9,22 @@
 </head>
 <body>
     <div class="flexbox">
-        <div id="systems-list0" class="systems-list">
-            <!--html injected by javascript-->
+        <div style="min-width: min-content; width: 100%; height: 95vh; overflow-y: scroll;">
+            <div id="systems-list0" class="systems-list">
+                <!--html injected by javascript-->
+            </div>
         </div>
         <div id="planet-overview0" class="planet-overview" style="display: none;">
+            <div class="flexbox-reverse">
+                <button onclick="close_planet_overview_panel()" style="width: 30px; height: 30px; background-color: brown; border: none;">x</button>
+            </div>
             <div class="flexbox">
-                <p id="planet-overview0-name" class="planet-overview-info">Name</p>
-                <p id="planet-overview0-mass" class="planet-overview-info">Mass</p>
-                <p id="planet-overview0-hazard-rating" class="planet-overview-info">Hazard rating</p>
-                <p id="planet-overview0-surface-temperature" class="planet-overview-info">Average surface temperature</p>
-                <p id="planet-overview0-atmosphere-pressure" class="planet-overview-info">Atmosphere pressure</p>
-                <p id="planet-overview0-organics" class="planet-overview-info">Organics</p>
+                <p class="planet-overview-infrastructure" id="farming" style="display: none;">Farming</p>
+                <p class="planet-overview-infrastructure" id="mining" style="display: none;">Mining</p>
+                <p class="planet-overview-infrastructure" id="industry" style="display: none;">Industry</p>
+                <p class="planet-overview-infrastructure" id="space-elevator" style="display: none;">Space elevator</p>
+                <p class="planet-overview-infrastructure" id="mass-driver" style="display: none;">Mass driver</p>
+                <p class="planet-overview-infrastructure" id="rift-generator" style="display: none;">Rift generator</p>
             </div>
         </div>
     </div>

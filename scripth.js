@@ -11,22 +11,30 @@ There is no dynamic star system architecture system because thats not the main f
 
 
 class Planet {
-	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, industry, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony) {
-		this.type =							type
-		this.mass_earth =					mass_earth
-		this.hazard_rating =				hazard_rating
-		this.atmosphere_pressure =			atmosphere_pressure
-		this.population =					population
-		this.economy_gdp =					economy_gdp
-		this.stability =					stability
-		this.access =						access
-		this.industry =						industry
-		this.market_demand =				market_demand
-		this.market_supply =				market_supply
-		this.rare_metals =					rare_metals
-		this.organics = 					organics
-		this.average_surface_temperature =	average_surface_temperature
-		this.has_colony =					has_colony
+	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, infrastructure, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony, farmland, farming, mining, industry, space_elevator, mass_driver, rift_generator) {
+		this.type =							type						//string
+		this.mass_earth =					mass_earth					//number
+		this.hazard_rating =				hazard_rating				//number
+		this.atmosphere_pressure =			atmosphere_pressure			//number
+		this.population =					population					//number
+		this.economy_gdp =					economy_gdp					//number
+		this.stability =					stability					//number
+		this.access =						access						//number
+		this.infrastructure =				infrastructure				//number
+		this.market_demand =				market_demand				//array
+		this.market_supply =				market_supply				//array
+		this.rare_metals =					rare_metals					//number
+		this.organics = 					organics					//number
+		this.average_surface_temperature =	average_surface_temperature	//number
+		this.has_colony =					has_colony					//boolean
+		this.farmland =						farmland					//number
+		this.farming =						farming						//boolean
+		this.mining =						mining						//boolean
+		this.industry =						industry					//boolean
+		this.space_elevator =				space_elevator				//boolean
+		this.mass_driver =					mass_driver					//boolean
+		this.rift_generator =				rift_generator				//boolean
+
 	}
 }
 
@@ -61,6 +69,8 @@ class Vector3D {
 	/*
 	The systems have to exist somewhere in space. I use a Vector3D to set the position in space relative to the starting system which is always at (0, 0, 0)
 	The unit of measurement is in lightyears. Distances between planets within systems will not be simulated using this method. 
+
+	Almost all the methods should return a copy of the vector3d the exceptions being normalize() and toFixed()
 	*/
     constructor(x, y, z) {
         this.x = x;
@@ -69,6 +79,11 @@ class Vector3D {
     }
 
 	// All these methods might not be necessary
+	
+	clone() {
+		return new Vector3D(this.x, this.y, this.z)
+	}
+
     add(vector) {
         return new Vector3D(this.x + vector.x, this.y + vector.y, this.z + vector.z);
     }
@@ -76,6 +91,14 @@ class Vector3D {
     subtract(vector) {
         return new Vector3D(this.x - vector.x, this.y - vector.y, this.z - vector.z);
     }
+
+	multiply(vector){
+		if(typeof vector === "number"){
+			return new Vector3D(this.x * vector, this.y * vector, this.z * vector)
+		}else if(vector instanceof Vector3D){
+			return new Vector3D(this.x * vector.x, this.y * vector.y, this.z * vector.z)
+		}
+	}
 
     dot(vector) {
         return this.x * vector.x + this.y * vector.y + this.z * vector.z;
@@ -89,7 +112,23 @@ class Vector3D {
         );
     }
 
-	normal()
+	normal() {
+		const magnitude = Math.sqrt(this.x**2+ this.y**2 + this.z**2)
+		if (magnitude === 0) {
+			throw new Error("Cannot normalize a zero vector");
+		}
+		return new Vector3D(this.x/magnitude, this.y/magnitude, this.z/magnitude)
+	}
+
+	normalize() {
+		const magnitude = Math.sqrt(this.x**2+ this.y**2 + this.z**2)
+		if (magnitude === 0) {
+			throw new Error("Cannot normalize a zero vector");
+		}
+		this.x /= magnitude
+		this.y /= magnitude
+		this.z /= magnitude
+	}
 
 	distance(vector) {
 		if(vector === 0){
@@ -99,6 +138,16 @@ class Vector3D {
 		}else{
 			throw new Error(vector + " is not a valid object")
 		}
+	}
+
+	toFixed(value) {
+		this.x = Number(this.x.toFixed(value))
+		this.y = Number(this.y.toFixed(value))
+		this.z = Number(this.z.toFixed(value))
+	}
+
+	magnitude() {
+		return Math.sqrt(this.x**2+ this.y**2 + this.z**2)
 	}
 }
 
@@ -206,10 +255,11 @@ function create_star_system_info_element(star_info_elements, planet_info_table, 
 function create_star_system_info_element2(system){
 	const star_info_elements = create_star_info_list(system.stars)
 	const planet_info_table = create_planets_table_element(system.planets)
-	const distance_to_start = system.distance_to_start
+	const distance_to_start = system.distance_to_start.toFixed(2)
 	const number_of_objects = system.stars.length + system.planets.length
 	const system_name = system.name
-	const system_position = system.position
+	const system_position = system.position.clone()
+	system_position.toFixed(2)
 	const star_system_info_element = create_star_system_info_element(star_info_elements, planet_info_table, distance_to_start, number_of_objects, system_name, system_position)
 	return star_system_info_element
 }
@@ -514,7 +564,7 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, type = 
 	organics -= (average_surface_temperature - 293 + Math.abs(average_surface_temperature - 293)) ** 2 / 1000 + (293 - average_surface_temperature + Math.abs(293 - average_surface_temperature)) ** 3 / 1000000
 	organics = Math.max(organics, 0)
 	
-	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, "", "", "", rare_metals, organics, average_surface_temperature, false)
+	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, 0, "", "", rare_metals, organics, average_surface_temperature, false, organics)
 	return planet
 }
 
@@ -586,11 +636,37 @@ function generate_random_system(position, stars_amount = random_number_by_weight
 
 
 
-function open_planet_overview_panel(planet){
+function open_planet_overview_panel(planet = new Planet()){
 	console.groupCollapsed("open planet overview panel")
 	console.log("planet", planet)
 
 	planet_overview_base_element.style.display = "block"
+
+	const farming_element = document.getElementById("farming")
+	const mining_element = document.getElementById("mining")
+	const industry_element = document.getElementById("industry")
+	const space_elevator_element = document.getElementById("space-elevator")
+	const mass_driver_element = document.getElementById("mass-driver")
+	const rift_generator_element = document.getElementById("rift-generator")
+
+	if(planet.farming){
+		farming_element.style.display = "inline"
+	}
+	if(planet.mining){
+		mining_element.style.display = "inline"
+	}
+	if(planet.industry){
+		industry_element.style.display = "inline"
+	}
+	if(planet.space_elevator){
+		space_elevator_element.style.display = "inline"
+	}
+	if(planet.mass_driver){
+		mass_driver_element.style.display = "inline"
+	}
+	if(planet.rift_generator){
+		rift_generator_element.style.display = "inline"
+	}
 
 	console.groupEnd()
 }
@@ -616,7 +692,14 @@ for (let i = 0; i < 8; i++) {
 	let local_brightness = brightness / ((i * 0.5 + 0.9) ** 2)
 	
 	if(i === 1){
-		planets.push(generate_random_planet(local_brightness, 1, "terra", 1))
+		const starting_planet = generate_random_planet(local_brightness, 1, "terra", 1)
+		starting_planet.access = 0
+		starting_planet.has_colony = true
+		starting_planet.population = 8000000000
+		starting_planet.farming = true
+		starting_planet.mining = true
+		starting_planet.industry = true
+		planets.push(starting_planet)
 	}else{
 		planets.push(generate_random_planet(local_brightness, 1))
 	}
@@ -636,10 +719,13 @@ const planets_table_element = create_planets_table_element(planets)
 
 main_systems_list_element.appendChild(create_star_system_info_element(star_info_elements, planets_table_element, starting_system.distance_to_start, planets.length + 1, starting_system.name, starting_system.position))
 
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
-main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(new Vector3D(1, 1, 0))))
+
+for (let i = 0; i < 16; i++) {
+
+	const distance = Math.cbrt((3*(i+1)*64)/(4*Math.PI))
+	let position = new Vector3D(Math.random()-0.5,Math.random()-0.5,Math.random()-0.5)
+	position.normalize()
+	position = position.multiply(distance)
+	main_systems_list_element.appendChild(create_star_system_info_element2(generate_random_system(position)))
+
+}
