@@ -11,7 +11,7 @@ There is no dynamic star system architecture system because thats not the main f
 
 
 class Planet {
-	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, infrastructure, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony, farmland, farming, mining, industry, space_elevator, mass_driver, rift_generator) {
+	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, infrastructure, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony, farmland, farming, mining, industry, space_elevator, mass_driver, rift_generator, supplies) {
 		this.type =							type						//string
 		this.mass_earth =					mass_earth					//number
 		this.hazard_rating =				hazard_rating				//number
@@ -34,7 +34,7 @@ class Planet {
 		this.space_elevator =				space_elevator				//boolean
 		this.mass_driver =					mass_driver					//boolean
 		this.rift_generator =				rift_generator				//boolean
-
+		this.supplies =						supplies					//number
 	}
 }
 
@@ -156,6 +156,33 @@ class Vector3D {
 
 function random_array_element(array){
 	return array[Math.floor(Math.random() * array.length)]
+}
+
+
+
+
+function simplify(n){
+    if(n < 1000){return Math.round(n)}
+    let denom = 0
+    const symbols = [" ", "K", "M", "B", "T", "Qa", "Qu", "Sx", "Se", "Oc", "No"]
+    while(n >= 1000){
+        denom++
+        n *= 0.001
+    }
+
+    let nr = n
+    nr = Math.floor(nr)
+    nr = nr.toString()
+    let len = nr.length
+    nr = 3 - len
+    if(nr > 0){
+        n = n.toFixed(nr)
+    }
+    else {
+        n = Math.floor(n)
+    }
+
+    return n + symbols[denom]
 }
 
 
@@ -564,7 +591,7 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, type = 
 	organics -= (average_surface_temperature - 293 + Math.abs(average_surface_temperature - 293)) ** 2 / 1000 + (293 - average_surface_temperature + Math.abs(293 - average_surface_temperature)) ** 3 / 1000000
 	organics = Math.max(organics, 0)
 	
-	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, 0, "", "", rare_metals, organics, average_surface_temperature, false, organics)
+	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, 0, "", "", rare_metals, organics, average_surface_temperature, false, organics, false, false, false, false, false, false, 0)
 	return planet
 }
 
@@ -668,6 +695,13 @@ function open_planet_overview_panel(planet = new Planet()){
 		rift_generator_element.style.display = "inline"
 	}
 
+
+	const population_element = document.getElementById("population")
+	population_element.textContent = "Population: " + simplify(planet.population)
+	
+	const supplies_element = document.getElementById("supplies")
+	supplies_element.textContent = "Supplies: " + simplify(planet.supplies)
+
 	console.groupEnd()
 }
 
@@ -699,6 +733,7 @@ for (let i = 0; i < 8; i++) {
 		starting_planet.farming = true
 		starting_planet.mining = true
 		starting_planet.industry = true
+		starting_planet.supplies = 10000000000
 		planets.push(starting_planet)
 	}else{
 		planets.push(generate_random_planet(local_brightness, 1))
