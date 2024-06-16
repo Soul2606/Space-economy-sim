@@ -11,7 +11,7 @@ There is no dynamic star system architecture system because thats not the main f
 
 
 class Planet {
-	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, infrastructure, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony, farmland, farming, mining, industry, space_elevator, mass_driver, rift_generator, supplies) {
+	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, infrastructure, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony, farmland, farming, mining, industry, space_elevator, mass_driver, rift_generator, supplies, food, fertilizer, basic_commodities, luxury_goods, recreational_drugs, refined_metals) {
 		this.type =							type						//string
 		this.mass_earth =					mass_earth					//number
 		this.hazard_rating =				hazard_rating				//number
@@ -35,6 +35,12 @@ class Planet {
 		this.mass_driver =					mass_driver					//boolean
 		this.rift_generator =				rift_generator				//boolean
 		this.supplies =						supplies					//number
+		this.food =							food						//number
+		this.fertilizer =					fertilizer					//number
+		this.basic_commodities =			basic_commodities			//number
+		this.luxury_goods =					luxury_goods				//number
+		this.recreational_drugs =			recreational_drugs			//number
+		this.refined_metals =				refined_metals				//number
 	}
 }
 
@@ -675,6 +681,13 @@ function open_planet_overview_panel(planet = new Planet()){
 	const space_elevator_element = document.getElementById("space-elevator")
 	const mass_driver_element = document.getElementById("mass-driver")
 	const rift_generator_element = document.getElementById("rift-generator")
+
+	farming_element.style.display = "none"
+	mining_element.style.display = "none"
+	industry_element.style.display = "none"
+	space_elevator_element.style.display = "none"
+	mass_driver_element.style.display = "none"
+	rift_generator_element.style.display = "none"
 
 	if(planet.farming){
 		farming_element.style.display = "inline"
