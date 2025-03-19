@@ -8,39 +8,27 @@ This sim does not care about the systems architecture around multiple stars. It 
 There is no dynamic star system architecture system because thats not the main focus of this app.
 */
 
+class AstronomicalBody {
+	constructor(mass=1, satellites=[]) {
+		this.mass = mass
+		this.satellites = satellites
+	}
+}
 
 
-class Planet {
-	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, population, economy_gdp, stability, access, infrastructure, market_demand, market_supply, rare_metals, organics, average_surface_temperature, has_colony, farmland, farming, mining, industry, space_elevator, mass_driver, rift_generator, supplies, food, fertilizer, basic_commodities, luxury_goods, recreational_drugs, refined_metals) {
+
+
+class Planet extends AstronomicalBody{
+	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, rare_metals, organics, average_surface_temperature, has_colony) {
+		super(mass_earth)
 		this.type =							type						//string
-		this.mass_earth =					mass_earth					//number
 		this.hazard_rating =				hazard_rating				//number
 		this.atmosphere_pressure =			atmosphere_pressure			//number
-		this.population =					population					//number
-		this.economy_gdp =					economy_gdp					//number
-		this.stability =					stability					//number
-		this.access =						access						//number
-		this.infrastructure =				infrastructure				//number
-		this.market_demand =				market_demand				//array
-		this.market_supply =				market_supply				//array
 		this.rare_metals =					rare_metals					//number
 		this.organics = 					organics					//number
 		this.average_surface_temperature =	average_surface_temperature	//number
 		this.has_colony =					has_colony					//boolean
-		this.farmland =						farmland					//number
-		this.farming =						farming						//boolean
-		this.mining =						mining						//boolean
-		this.industry =						industry					//boolean
-		this.space_elevator =				space_elevator				//boolean
-		this.mass_driver =					mass_driver					//boolean
-		this.rift_generator =				rift_generator				//boolean
-		this.supplies =						supplies					//number
-		this.food =							food						//number
-		this.fertilizer =					fertilizer					//number
-		this.basic_commodities =			basic_commodities			//number
-		this.luxury_goods =					luxury_goods				//number
-		this.recreational_drugs =			recreational_drugs			//number
-		this.refined_metals =				refined_metals				//number
+		this.market = null
 	}
 }
 
@@ -60,11 +48,68 @@ class Star_system {
 
 
 
-class Star {
+class Star extends AstronomicalBody{
 	constructor(mass_solar, type){
+		super()
 		this.mass_solar =	mass_solar
 		this.type =			type
 		this.brightness =	(mass_solar / 2 + 0.75) ** 2
+	}
+}
+
+
+
+
+class Commodity {
+	constructor(name='', amount=0, price=2, max_price=3, min_price=1) {
+		this.name = name
+		this.amount = amount
+		this.price = price
+		this.max_price = max_price
+		this.min_price = min_price
+	}
+}
+
+
+
+
+class Commodities {
+	constructor(supplies=0, food=0, fertilizer=0, basic_commodities=0, luxury_goods=0, recreational_drugs=0, refined_metals=0, heavy_machinery=0) {
+		this.supplies =				new Commodity('supplies', supplies, 100, 400, 50)
+		this.food =					new Commodity('food', food, 8, 24, 4)
+		this.fertilizer =			new Commodity('fertilizer', fertilizer, 8, 24, 4)
+		this.basic_commodities =	new Commodity('basic_commodities', basic_commodities, 24, 52, 16)
+		this.luxury_goods =			new Commodity('luxury_goods', luxury_goods, 64)	
+		this.recreational_drugs =	new Commodity('recreational_drugs', recreational_drugs, 200, 600, 100)
+		this.refined_metals =		new Commodity('refined_metals', refined_metals, 12, 24, 8)
+		this.heavy_machinery =		new Commodity('heavy_machinery', heavy_machinery, 150, 250, 100)
+	}
+}
+
+
+
+
+class Industry {
+	constructor(name='new industry', produce=[], consumption=[]) {
+		this.name = name
+		this.produce = produce
+		this.consumption = consumption
+	}
+}
+
+
+
+
+class Market {
+	constructor(population, economy_gdp, stability, access) {
+		this.population =	population
+		this.economy_gdp =	economy_gdp
+		this.stability =	stability
+		this.access =		access
+		this.commodities =	new Commodities(250, 1500, 900, 1200, 600, 50, 3200, 400)
+		this.industries = [
+			new Industry('farming', new Commodities(0,1,0,0,0,0,0,0), new Commodities(0,0,1,0,0,0,0,0))
+		]
 	}
 }
 
@@ -431,7 +476,7 @@ function create_planets_table_element(planet_objects){
 
 	for (let i = 0; i < planet_objects.length; i++) {
 		const planet_object = planet_objects[i]
-		const planet_table_row = create_planet_info_element(planet_object.type, planet_object.mass_earth, planet_object.hazard_rating, planet_object.average_surface_temperature, planet_object.atmosphere_pressure, planet_object.organics, planet_object.has_colony)
+		const planet_table_row = create_planet_info_element(planet_object.type, planet_object.mass, planet_object.hazard_rating, planet_object.average_surface_temperature, planet_object.atmosphere_pressure, planet_object.organics, planet_object.has_colony)
 		
 		planet_table_row.addEventListener("click", function(){
 			open_planet_overview_panel(planet_object)
@@ -538,7 +583,8 @@ function rgb_string_from_temperature(value){
 
 
 function generate_random_planet(energy_from_stars, solar_wind_intensity, type = random_array_element(["terra", "gas giant", "oceania", "super oceania"]), atmosphere_pressure, mass){	
-	
+	console.groupCollapsed('generate random planet')
+	console.log('energy from stars', energy_from_stars)
 	switch (type) {
 		case "gas giant":
 			if(mass === undefined){
@@ -597,7 +643,9 @@ function generate_random_planet(energy_from_stars, solar_wind_intensity, type = 
 	organics -= (average_surface_temperature - 293 + Math.abs(average_surface_temperature - 293)) ** 2 / 1000 + (293 - average_surface_temperature + Math.abs(293 - average_surface_temperature)) ** 3 / 1000000
 	organics = Math.max(organics, 0)
 	
-	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, 0, 0, 0, 0, 0, "", "", rare_metals, organics, average_surface_temperature, false, organics, false, false, false, false, false, false, 0)
+	const planet = new Planet(type, mass, hazard_rating, atmosphere_pressure, rare_metals, organics, average_surface_temperature, false)
+	console.log(planet)
+	console.groupEnd()
 	return planet
 }
 
@@ -742,11 +790,6 @@ for (let i = 0; i < 8; i++) {
 		const starting_planet = generate_random_planet(local_brightness, 1, "terra", 1)
 		starting_planet.access = 0
 		starting_planet.has_colony = true
-		starting_planet.population = 8000000000
-		starting_planet.farming = true
-		starting_planet.mining = true
-		starting_planet.industry = true
-		starting_planet.supplies = 10000000000
 		planets.push(starting_planet)
 	}else{
 		planets.push(generate_random_planet(local_brightness, 1))
