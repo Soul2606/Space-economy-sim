@@ -81,8 +81,8 @@ class Commodity {
 
 
 class Commodities {
-	constructor(supplies=0, food=0, fertilizer=0, basic_commodities=0, luxury_goods=0, recreational_drugs=0, refined_metals=0, heavy_machinery=0) {
-		const valid_keys = ['supplies','food','fertilizer','basic_commodities','luxury_goods','recreational_drugs','refined_metals','heavy_machinery']
+	constructor(supplies=0, food=0, fertilizer=0, basic_commodities=0, luxury_goods=0, recreational_drugs=0, refined_metals=0, heavy_machinery=0, volatiles=0, fuel=0, organics=0) {
+		const valid_keys = ['supplies','food','fertilizer','basic_commodities','luxury_goods','recreational_drugs','refined_metals','heavy_machinery','volatiles','fuel','organics']
 		this.supplies =				new Commodity('supplies', 0, 100, 400, 50)
 		this.food =					new Commodity('food', 0, 8, 24, 4)
 		this.fertilizer =			new Commodity('fertilizer', 0, 8, 24, 4)
@@ -91,10 +91,17 @@ class Commodities {
 		this.recreational_drugs =	new Commodity('recreational_drugs', 0, 200, 600, 100)
 		this.refined_metals =		new Commodity('refined_metals', 0, 12, 24, 8)
 		this.heavy_machinery =		new Commodity('heavy_machinery', 0, 150, 250, 100)
+		this.volatiles =			new Commodity('volatiles', 0, 150, 250, 100)
+		this.fuel =					new Commodity('fuel', 0, 150, 250, 100)
+		this.organics =				new Commodity('organics', 0, 150, 250, 100)
 		if (typeof supplies === 'string'&&typeof food === 'number') {
 			if (valid_keys.includes(supplies)) {
 				this[supplies].amount = food
 			}
+		}else if (supplies instanceof Commodities) {
+			supplies.for_each_commodity((commodity, key)=>{
+				this[key].amount = commodity.amount
+			})
 		}else{
 			this.supplies.amount = supplies
 			this.food.amount = food
@@ -104,12 +111,15 @@ class Commodities {
 			this.recreational_drugs.amount = recreational_drugs
 			this.refined_metals.amount = refined_metals
 			this.heavy_machinery.amount = heavy_machinery
+			this.volatiles.amount = volatiles
+			this.fuel.amount = fuel
+			this.organics.amount = organics
 		}
 	}
 
 	for_each_commodity(iterative_function){
 		if (typeof iterative_function === 'function') {
-			const keys = ['supplies','food','fertilizer','basic_commodities','luxury_goods','recreational_drugs','refined_metals','heavy_machinery']
+			const keys = ['supplies','food','fertilizer','basic_commodities','luxury_goods','recreational_drugs','refined_metals','heavy_machinery','volatiles','fuel','organics']
 			const returns = []
 			for (let i = 0; i < keys.length; i++) {
 				const key = keys[i];
@@ -180,9 +190,29 @@ class Industry {
 		}
 	}
 
+	demand(){
+		const results = new Commodities()
+		this.consumption.for_each_commodity((commodity, key)=>{
+			results[key].amount = (6000 * soft_sign((commodity.amount - 5) / 10) + 2000)
+		})
+		return results
+	}
+
 	production(available_resources){
 		if (available_resources instanceof Commodities) {
-			
+			const satisfaction = []
+			this.consumption.for_each_commodity((commodity, key)=>{
+				if (commodity.amount > 0) {
+					satisfaction.push(available_resources[key].amount / 6000 * soft_sign((commodity.amount - 5) / 10) + 2000)
+				}
+			})
+			const min_satisfaction = clamp(Math.min(...satisfaction))
+			const result = new Commodities(this.produce)
+			console.log(min_satisfaction, result)
+			result.for_each_commodity((commodity, key)=>{
+				commodity.amount = Math.floor(this.produce[key].amount*min_satisfaction)
+			})
+			return result
 		}
 	}
 }
@@ -840,28 +870,28 @@ function open_planet_overview_panel(planet = new Planet()){
 	if(planet.market.industries.some(element=>element.name === 'farming')){
 		farming_element.style.display = "inline"
 	}
-	if(planet.market.mining){
+	if(planet.market.industries.some(element=>element.name === 'mining')){
 		mining_element.style.display = "inline"
 	}
-	if(planet.market.industry){
+	if(planet.market.industries.some(element=>element.name === 'industry')){
 		industry_element.style.display = "inline"
 	}
-	if(planet.market.space_elevator){
+	if(planet.market.industries.some(element=>element.name === 'space_elevator')){
 		space_elevator_element.style.display = "inline"
 	}
-	if(planet.market.mass_driver){
+	if(planet.market.industries.some(element=>element.name === 'mass_driver')){
 		mass_driver_element.style.display = "inline"
 	}
-	if(planet.market.rift_generator){
+	if(planet.market.industries.some(element=>element.name === 'rift_generator')){
 		rift_generator_element.style.display = "inline"
 	}
 
 
 	const population_element = document.getElementById("population")
-	population_element.textContent = "Population: " + simplify(planet.population)
+	population_element.textContent = "Population: " + simplify(planet.market.population)
 	
 	const supplies_element = document.getElementById("supplies")
-	supplies_element.textContent = "Supplies: " + simplify(planet.supplies)
+	supplies_element.textContent = "Supplies: " + simplify(planet.market.commodities.supplies.amount)
 
 	console.groupEnd()
 }
@@ -890,6 +920,7 @@ for (let i = 0; i < 8; i++) {
 		const starting_planet = generate_random_planet(local_brightness, 1, "terra", 1)
 		starting_planet.access = 0
 		starting_planet.has_colony = true
+		starting_planet.market = new Market(9, 1, 10, 0)
 		planets.push(starting_planet)
 	}else{
 		planets.push(generate_random_planet(local_brightness, 1))
