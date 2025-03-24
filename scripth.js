@@ -19,8 +19,8 @@ class AstronomicalBody {
 
 
 class Planet extends AstronomicalBody{
-	constructor(type, mass_earth, hazard_rating, atmosphere_pressure, rare_metals, organics, average_surface_temperature, has_colony) {
-		super(mass_earth)
+	constructor(type, mass, hazard_rating, atmosphere_pressure, rare_metals, organics, average_surface_temperature, has_colony) {
+		super(mass)
 		this.type =							type						//string
 		this.hazard_rating =				hazard_rating				//number
 		this.atmosphere_pressure =			atmosphere_pressure			//number
@@ -61,12 +61,19 @@ class Star extends AstronomicalBody{
 
 
 class Commodity {
-	constructor(name='', amount=0, price=2, max_price=3, min_price=1) {
+	constructor(name='', amount=0, default_price=2, max_price=3, min_price=1) {
 		this.name = name
 		this.amount = amount
-		this.price = price
+		this.default_price = default_price
 		this.max_price = max_price
 		this.min_price = min_price
+	}
+
+	price(demand = 0){
+		if (typeof demand !== 'number') {
+			throw new Error("Invalid parameter");
+		}
+		return clamp(demand / this.amount, this.min_price, this.max_price)
 	}
 }
 
@@ -75,14 +82,87 @@ class Commodity {
 
 class Commodities {
 	constructor(supplies=0, food=0, fertilizer=0, basic_commodities=0, luxury_goods=0, recreational_drugs=0, refined_metals=0, heavy_machinery=0) {
-		this.supplies =				new Commodity('supplies', supplies, 100, 400, 50)
-		this.food =					new Commodity('food', food, 8, 24, 4)
-		this.fertilizer =			new Commodity('fertilizer', fertilizer, 8, 24, 4)
-		this.basic_commodities =	new Commodity('basic_commodities', basic_commodities, 24, 52, 16)
-		this.luxury_goods =			new Commodity('luxury_goods', luxury_goods, 64)	
-		this.recreational_drugs =	new Commodity('recreational_drugs', recreational_drugs, 200, 600, 100)
-		this.refined_metals =		new Commodity('refined_metals', refined_metals, 12, 24, 8)
-		this.heavy_machinery =		new Commodity('heavy_machinery', heavy_machinery, 150, 250, 100)
+		const valid_keys = ['supplies','food','fertilizer','basic_commodities','luxury_goods','recreational_drugs','refined_metals','heavy_machinery']
+		this.supplies =				new Commodity('supplies', 0, 100, 400, 50)
+		this.food =					new Commodity('food', 0, 8, 24, 4)
+		this.fertilizer =			new Commodity('fertilizer', 0, 8, 24, 4)
+		this.basic_commodities =	new Commodity('basic_commodities', 0, 24, 52, 16)
+		this.luxury_goods =			new Commodity('luxury_goods', 0, 64, 150, 50)	
+		this.recreational_drugs =	new Commodity('recreational_drugs', 0, 200, 600, 100)
+		this.refined_metals =		new Commodity('refined_metals', 0, 12, 24, 8)
+		this.heavy_machinery =		new Commodity('heavy_machinery', 0, 150, 250, 100)
+		if (typeof supplies === 'string'&&typeof food === 'number') {
+			if (valid_keys.includes(supplies)) {
+				this[supplies].amount = food
+			}
+		}else{
+			this.supplies.amount = supplies
+			this.food.amount = food
+			this.fertilizer.amount = fertilizer
+			this.basic_commodities.amount = basic_commodities
+			this.luxury_goods.amount = luxury_goods
+			this.recreational_drugs.amount = recreational_drugs
+			this.refined_metals.amount = refined_metals
+			this.heavy_machinery.amount = heavy_machinery
+		}
+	}
+
+	for_each_commodity(iterative_function){
+		if (typeof iterative_function === 'function') {
+			const keys = ['supplies','food','fertilizer','basic_commodities','luxury_goods','recreational_drugs','refined_metals','heavy_machinery']
+			const returns = []
+			for (let i = 0; i < keys.length; i++) {
+				const key = keys[i];
+				returns.push(iterative_function(this[key], key, i))
+			}
+			return returns
+		}else{
+			throw new Error("Invalid parameters");
+		}
+	}
+
+	add(value){
+		if (value instanceof Commodities) {
+			this.for_each_commodity((commodity, key)=>this[key].amount += value[key].amount)
+		}else if (typeof value === 'number'){
+			this.for_each_commodity((commodity, key)=>this[key].amount += value)
+		}else{
+			throw new Error("Invalid parameter");
+		}
+		return this
+	}
+
+	subtract(value){
+		if (value instanceof Commodities) {
+			this.for_each_commodity((commodity, key)=>this[key].amount -= value[key].amount)
+		}else if (typeof value === 'number'){
+			this.for_each_commodity((commodity, key)=>this[key].amount -= value)
+		}else{
+			throw new Error("Invalid parameter");
+		}
+		return this
+	}
+
+	multiply(value){
+		if (value instanceof Commodities) {
+			this.for_each_commodity((commodity, key)=>this[key].amount *= value[key].amount)
+		}else if (typeof value === 'number'){
+			this.for_each_commodity((commodity, key)=>this[key].amount *= value)
+		}else{
+			throw new Error("Invalid parameter");
+		}
+		return this
+	}
+
+	divide(value){
+		if (value instanceof Commodities) {
+			this.for_each_commodity((commodity, key)=>this[key].amount /= value[key].amount)
+		}else if (typeof value === 'number'){
+			this.for_each_commodity((commodity, key)=>this[key].amount /= value)
+		}else{
+			throw new Error("Invalid parameter");
+		}
+		return this
 	}
 }
 
@@ -90,10 +170,20 @@ class Commodities {
 
 
 class Industry {
-	constructor(name='new industry', produce=[], consumption=[]) {
-		this.name = name
-		this.produce = produce
-		this.consumption = consumption
+	constructor(name='new industry', produce, consumption) {
+		if (produce instanceof Commodities && consumption instanceof Commodities) {			
+			this.name = name
+			this.produce = produce
+			this.consumption = consumption
+		}else{
+			throw new Error("Invalid parameters");
+		}
+	}
+
+	production(available_resources){
+		if (available_resources instanceof Commodities) {
+			
+		}
 	}
 }
 
@@ -200,6 +290,16 @@ class Vector3D {
 	magnitude() {
 		return Math.sqrt(this.x**2+ this.y**2 + this.z**2)
 	}
+}
+
+
+
+
+function clamp(value, min = 0, max = 1) {
+	if (typeof value !== 'number' || typeof min !== 'number' || typeof max !== 'number') {
+		throw new Error("Invalid parameters");
+	}
+	return Math.min(Math.max(value, min), max)
 }
 
 
@@ -737,22 +837,22 @@ function open_planet_overview_panel(planet = new Planet()){
 	mass_driver_element.style.display = "none"
 	rift_generator_element.style.display = "none"
 
-	if(planet.farming){
+	if(planet.market.industries.some(element=>element.name === 'farming')){
 		farming_element.style.display = "inline"
 	}
-	if(planet.mining){
+	if(planet.market.mining){
 		mining_element.style.display = "inline"
 	}
-	if(planet.industry){
+	if(planet.market.industry){
 		industry_element.style.display = "inline"
 	}
-	if(planet.space_elevator){
+	if(planet.market.space_elevator){
 		space_elevator_element.style.display = "inline"
 	}
-	if(planet.mass_driver){
+	if(planet.market.mass_driver){
 		mass_driver_element.style.display = "inline"
 	}
-	if(planet.rift_generator){
+	if(planet.market.rift_generator){
 		rift_generator_element.style.display = "inline"
 	}
 
